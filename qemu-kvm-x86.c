@@ -508,7 +508,16 @@ int kvm_arch_qemu_create_context(void)
     struct utsname utsname;
 
     uname(&utsname);
-    lm_capable_kernel = strcmp(utsname.machine, "x86_64") == 0;
+    if(strcmp(utsname.sysname, "SunOS") == 0) {
+        // uname in illumos doesn't provide info about 32/64-bit version of booted kernel
+#if defined(_LP64) || defined (__amd64)
+        lm_capable_kernel = 1;
+#else
+        lm_capable_kernel = 0;
+#endif
+    }
+    else
+        lm_capable_kernel = strcmp(utsname.machine, "x86_64") == 0;
 
     if (kvm_shadow_memory) {
         kvm_set_shadow_pages(kvm_context, kvm_shadow_memory);
