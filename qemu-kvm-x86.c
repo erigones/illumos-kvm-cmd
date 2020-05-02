@@ -736,12 +736,11 @@ void kvm_arch_push_nmi(void *opaque)
 static int kvm_reset_msrs(CPUState *env)
 {
     struct {
-        uint32_t nmsrs; /* number of msrs in entries */
-        uint32_t pad;
+        struct kvm_msrs info;
         struct kvm_msr_entry entries[100];
-    } kvm_msrs;
+    } msr_data;
     int n;
-    struct kvm_msr_entry *msrs = kvm_msrs.entries;
+    struct kvm_msr_entry *msrs = msr_data.entries;
     uint32_t index;
     uint64_t data;
 
@@ -761,9 +760,9 @@ static int kvm_reset_msrs(CPUState *env)
         kvm_msr_entry_set(&msrs[n], kvm_msr_list->indices[n], data);
     }
 
-    kvm_msrs.nmsrs = n;
+    msr_data.info.nmsrs = n;
 
-    return kvm_vcpu_ioctl(env, KVM_SET_MSRS, &kvm_msrs);
+    return kvm_vcpu_ioctl(env, KVM_SET_MSRS, &msr_data);
 }
 
 
